@@ -240,7 +240,8 @@ function getAudio(id) {
             console.log(request)
             audioElement = new Audio(request.result.url);
             audioElement.load();
-            const fileInput = document.getElementById(id);
+            const fileName = document.getElementById(id + "_currentAudio");
+            fileName.textContent = request.result.name;
             // TODO: ファイル名を表示する
             console.log("アラーム音を復元しました。");
             resolve(audioElement);
@@ -287,6 +288,8 @@ selectMusicButton.addEventListener("click", async () => {
         start_break_audio.pause();
     }
     start_break_audio = await saveAudio("breakMusic");
+    
+    musicSelector.classList.add("hidden");
 });
 
 function saveAudio(id) {

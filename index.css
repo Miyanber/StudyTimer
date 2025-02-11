@@ -132,14 +132,16 @@ div.circle_break::before {
     border: none;
 }
 
-div.settings {
+.settings {
     position: absolute;
+    left: 50%;
     top: 11%;
+    transform: translateX(-50%);
     text-align: center;
-    width: 100%;
+    width: max-content;
 }
 
-div.settings input {
+.settings input {
     width: 50px;
     padding: 5px 10px;
     border-radius: 10px;
@@ -243,6 +245,7 @@ div.notification button {
 .musicSelector__content {
     position: absolute;
     width: 80%;
+    max-width: 500px;
     height: 80%;
     top: 0;
     left: 0;
@@ -300,16 +303,21 @@ div.notification button {
 .musicSelector__content__list {
     padding: 10px;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     justify-content: center;
     gap: 10px;
+    border-bottom: 1px solid var(--white);
+
+    h3 {
+        margin: .5em 0;
+        text-align: center;
+    }
 }
 
 .musicSelector__content__footer {
     position: relative;
     padding: 10px;
     text-align: center;
-    border-top: 1px solid var(--white);
 }
 
 /* p.status {
@@ -338,3 +346,43 @@ p.status.hideStatus {
         transform: translateY(0%);
     }
 } */
+
+@media screen and (max-height: 600px) {
+    .timer {
+        top: 50%;
+        left: 25%;
+        transform: translateX(-50%) translateY(-50%);
+        height: fit-content;
+        width: 250px;
+        height: 250px;
+        cursor: pointer;
+    }
+
+    .settings {
+        left: 75%;
+        top: 15%;
+        transform: translateX(-50%);
+        text-align: center;
+        width: max-content;
+    }
+    
+    .settings input {
+        width: 5em;
+        padding: .5em;
+        border-radius: 10px;
+        margin-left: 10px;
+    }
+
+    .buttons {
+        bottom: 15%;
+        width: 100%;
+        width: max-content;
+        right: 25%;
+        transform: translateX(50%);
+    
+        button {
+            width: max-content;
+            min-width: 10em;
+        }
+    }
+}

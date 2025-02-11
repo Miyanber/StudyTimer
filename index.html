@@ -49,23 +49,35 @@
     <div class="buttons">
         <button id="delete" class="save">リセット</button>
         <button id="save" class="save">設定を保存</button>
-        <button id="openMusicSelector" class="save">アラーム音を選択</button>
+        <button id="openMusicSelector" class="save">アラーム音の設定</button>
     </div>
 
     <div class="musicSelector hidden" id="musicSelector">
         <div class="musicSelector__content">
             <div class="musicSelector__content__header">
-                <h2>アラーム音を選択</h2>
+                <h2>アラーム音の設定</h2>
                 <button id="closeMusicSelector" class="screen_close"></button>
             </div>
             <div class="musicSelector__content__list">
+                <h3>現在のアラーム音</h3>
                 <div class="musicSelector__content__list__item">
-                    <input type="file" id="studyMusic" accept="audio/*">
-                    <label for="music1">勉強開始</label>
+                    <div>勉強開始</div>
+                    <div id="studyMusic_currentAudio"></div>
                 </div>
                 <div class="musicSelector__content__list__item">
+                    <div>休憩開始</div>
+                    <div id="breakMusic_currentAudio"></div>
+                </div>
+            </div>
+            <div class="musicSelector__content__list">
+                <h3>アラーム音を変更</h3>
+                <div class="musicSelector__content__list__item">
+                    <div>勉強開始</div>
+                    <input type="file" id="studyMusic" accept="audio/*">
+                </div>
+                <div class="musicSelector__content__list__item">
+                    <div>休憩開始</div>
                     <input type="file" id="breakMusic" accept="audio/*">
-                    <label for="music2">休憩開始</label>
                 </div>
             </div>
             <div class="musicSelector__content__footer">
