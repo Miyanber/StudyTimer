@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="index.css">
     <title>Study Timer</title>
-    <script src="./index_worker.js" defer></script>
+    <script src="./script.js" defer></script>
 </head>
 
 <body>
@@ -23,22 +23,55 @@
     <!-- <p class="status"></p> -->
 
     <div class="settings">
-        <p><label for="study_time">勉強時間(分)</label><input type="number" name="study_time" id="study_time" value="45"></p>
-        <p><label for="break_time">休憩時間(分)</label><input type="number" name="break_time" id="break_time" value="15"></p>
+        <p><label for="study_time">勉強時間(分)</label><input type="number" name="study_time" id="study_time" value="45" min="0"></p>
+        <p><label for="break_time">休憩時間(分)</label><input type="number" name="break_time" id="break_time" value="15" min="0"></p>
     </div>
 
-    <div class="center">
+    <div class="timer" id="timer">
         <div class="circle"></div>
-    </div>
-    <div class="center">
         <div class="circle_break"></div>
-    </div>
-    <div class="center">
-        <p class="time"><span class="minutes"></span><span class="seconds"></span></p>
+        <div class="time">
+            <div>
+                残り時間 (分)
+            </div>
+            <div class="time__text">
+                <span class="minutes"></span>
+                <span class="seconds"></span>
+            </div>
+            <div class="timer_status">
+                <div id="timer_status" class="timer_status__text">
+                    タップして開始
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="buttons">
-        <button id="start_pause">開始</button><button id="delete" class="save">設定を保存</button>
+        <button id="delete" class="save">リセット</button>
+        <button id="save" class="save">設定を保存</button>
+        <button id="openMusicSelector" class="save">アラーム音を選択</button>
+    </div>
+
+    <div class="musicSelector hidden" id="musicSelector">
+        <div class="musicSelector__content">
+            <div class="musicSelector__content__header">
+                <h2>アラーム音を選択</h2>
+                <button id="closeMusicSelector" class="screen_close"></button>
+            </div>
+            <div class="musicSelector__content__list">
+                <div class="musicSelector__content__list__item">
+                    <input type="file" id="studyMusic" accept="audio/*">
+                    <label for="music1">勉強開始</label>
+                </div>
+                <div class="musicSelector__content__list__item">
+                    <input type="file" id="breakMusic" accept="audio/*">
+                    <label for="music2">休憩開始</label>
+                </div>
+            </div>
+            <div class="musicSelector__content__footer">
+                <button id="selectMusic" class="selectMusic">決定</button>
+            </div>
+        </div>
     </div>
 </body>
 
