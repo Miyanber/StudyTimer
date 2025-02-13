@@ -237,14 +237,18 @@ function getAudio(id) {
         const request = objectStore.get(id);
 
         request.onsuccess = () => {
-            console.log(request)
-            audioElement = new Audio(request.result.url);
-            audioElement.load();
-            const fileName = document.getElementById(id + "_currentAudio");
-            fileName.textContent = request.result.name;
-            // TODO: ファイル名を表示する
-            console.log("アラーム音を復元しました。");
-            resolve(audioElement);
+            console.log(request);
+            if (request.result) {
+                audioElement = new Audio(request.result.url);
+                audioElement.load();
+                const fileName = document.getElementById(id + "_currentAudio");
+                fileName.textContent = request.result.name;
+                console.log("アラーム音を復元しました。");
+                resolve(audioElement);
+            } else {
+                console.log("アラーム音が登録されていません。");
+                resolve(null);
+            }
         };
 
         request.onerror = () => {
@@ -258,7 +262,17 @@ request.onsuccess = async (event) => {
     db = event.target.result;
 
     start_study_audio = await getAudio("studyMusic");
+    if (!start_study_audio) {
+        document.getElementById("studyMusic_currentAudio").textContent = "未設定";
+    }
     start_break_audio = await getAudio("breakMusic");
+    if (!start_break_audio) {
+        document.getElementById("breakMusic_currentAudio").textContent = "未設定";
+    }
+
+    if (!start_study_audio || !start_break_audio) {
+        alert("アラーム音が設定されていません。画面下部の「アラーム音の設定」ボタンから、アラーム音を設定してください。");
+    }
 };
 
 request.onupgradeneeded = (event) => {
