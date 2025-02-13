@@ -279,6 +279,11 @@ openMusicSelectorButton.addEventListener("click", () => {
 });
 
 selectMusicButton.addEventListener("click", async () => {
+    const fileInput1 = document.getElementById("studyMusic");
+    fileInput1.disabled = true;
+    const fileInput2 = document.getElementById("breakMusic");
+    fileInput2.disabled = true;
+
     if (start_study_audio) {
         start_study_audio.pause();
     }
@@ -289,6 +294,8 @@ selectMusicButton.addEventListener("click", async () => {
     }
     start_break_audio = await saveAudio("breakMusic");
     
+    fileInput1.disabled = false;
+    fileInput2.disabled = false;
     musicSelector.classList.add("hidden");
 });
 
@@ -320,7 +327,8 @@ function saveAudio(id) {
                         };
 
                         request.onerror = () => {
-                            console.log("アラーム音の更新に失敗しました。");
+                            console.error("アラーム音の更新に失敗しました。");
+                            alert("アラーム音の更新に失敗しました。しばらくしてから再度お試しください。");
                             reject();
                         };
                     } else {
@@ -334,7 +342,8 @@ function saveAudio(id) {
                         };
 
                         request.onerror = () => {
-                            console.log("アラーム音の登録に失敗しました。");
+                            console.error("アラーム音の登録に失敗しました。");
+                            alert("アラーム音の更新に失敗しました。しばらくしてから再度お試しください。");
                             reject();
                         };
                     }
