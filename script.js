@@ -361,7 +361,7 @@ function saveAudio(id) {
 
                         request.onerror = () => {
                             console.error("アラーム音の登録に失敗しました。");
-                            alert("アラーム音の更新に失敗しました。しばらくしてから再度お試しください。");
+                            alert("アラーム音の更新に失敗しました。しばらくしてから再度お試しください。エラー内容: " + request.error);
                             reject();
                         };
                     }
