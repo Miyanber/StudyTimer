@@ -294,8 +294,12 @@ openMusicSelectorButton.addEventListener("click", () => {
 
 selectMusicButton.addEventListener("click", async () => {
     const fileInput1 = document.getElementById("studyMusic");
-    fileInput1.disabled = true;
     const fileInput2 = document.getElementById("breakMusic");
+    if (fileInput1.files.length === 0 || fileInput2.files.length === 0) {
+        alert("アラーム音を選択してください。");
+        return;
+    }
+    fileInput1.disabled = true;
     fileInput2.disabled = true;
 
     if (start_study_audio) {
@@ -307,7 +311,7 @@ selectMusicButton.addEventListener("click", async () => {
         start_break_audio.pause();
     }
     start_break_audio = await saveAudio("breakMusic");
-    
+
     fileInput1.disabled = false;
     fileInput2.disabled = false;
     musicSelector.classList.add("hidden");
