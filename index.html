@@ -47,16 +47,16 @@
     </div>
 
     <div class="buttons">
-        <button id="delete" class="save">リセット</button>
-        <button id="save" class="save">設定を保存</button>
-        <button id="openMusicSelector" class="save">アラーム音の設定</button>
+        <button type="button" id="delete" class="save">リセット</button>
+        <button type="button" id="save" class="save">設定を保存</button>
+        <button type="button" id="openMusicSelector" class="save">アラーム音の設定</button>
     </div>
 
     <div class="musicSelector hidden" id="musicSelector">
         <div class="musicSelector__content">
             <div class="musicSelector__content__header">
                 <h2>アラーム音の設定</h2>
-                <button id="closeMusicSelector" class="screen_close"></button>
+                <button type="button" id="closeMusicSelector" class="screen_close">閉じる</button>
             </div>
             <div class="musicSelector__content__list">
                 <h3>現在のアラーム音</h3>
@@ -72,16 +72,20 @@
             <div class="musicSelector__content__list">
                 <h3>アラーム音を変更</h3>
                 <div class="musicSelector__content__list__item">
-                    <div>勉強開始</div>
+                    <div>
+                        <label for="studyMusic">勉強開始</label>
+                    </div>
                     <input type="file" id="studyMusic" accept="audio/*">
                 </div>
                 <div class="musicSelector__content__list__item">
-                    <div>休憩開始</div>
+                    <div>
+                        <label for="breakMusic">休憩開始</label>
+                    </div>
                     <input type="file" id="breakMusic" accept="audio/*">
                 </div>
             </div>
             <div class="musicSelector__content__footer">
-                <button id="selectMusic" class="selectMusic">決定</button><br>
+                <button type="button" id="selectMusic" class="selectMusic">決定</button><br>
                 <br>★変更には最大30秒程度かかることがあります。
                 <br>更新が完了した場合、自動で選択画面が閉じます。
             </div>
