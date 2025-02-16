@@ -223,7 +223,7 @@ document.addEventListener("visibilitychange", async () => {
 
 // IndexedDB
 let db;
-const request = indexedDB.open("audioDB", 3);
+const request = indexedDB.open("audioDB");
 
 request.onerror = (event) => {
     console.error('Error opening IndexedDB:', event.target.errorCode);
