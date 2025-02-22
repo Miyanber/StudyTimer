@@ -185,7 +185,7 @@ input:disabled {
     flex-direction: column;
     flex-wrap: wrap;
     position: absolute;
-    bottom: 15%;
+    bottom: 10%;
     width: 100%;
 
     button {
