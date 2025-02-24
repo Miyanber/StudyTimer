@@ -198,16 +198,30 @@ if ("wakeLock" in navigator) {
 // 起動ロックの参照を作成
 let wakeLock = null;
 
+// wakeLock 対応確認
+if ("wakeLock" in navigator) {
+    // isSupported = true;
+    console.log("起動ロック API に対応しています。");
+} else {
+    // wakeButton.disabled = true;
+    alert("このブラウザーは起動ロックに対応していません。");
+}
+
 // 非同期関数を作成して起動ロックをリクエスト
 (async () => {
     try {
         wakeLock = await navigator.wakeLock.request("screen");
         console.log("起動ロックが有効です。");
-        alert("このWebサイトでは、タイマーを継続して起動させるため、画面スリーブを停止しています。")
+        alert("Study Timer では、タイマーを継続して起動させるため、画面スリーブを停止しています。")
     } catch (err) {
         // 起動ロックのリクエストに失敗。ふつうはバッテリーなどのシステム関連
         console.warn(`${err.name}, ${err.message}`);
-        alert("画面スリープが停止できません。このWebサイトでは、タイマーを継続して起動させるため、画面スリーブを停止する必要があります。バッテリイーセーバー等の設定を確認して下さい。")
+        alert(
+            `画面スリープが停止できません。
+            Study Timer では、タイマーを継続して起動させるため、画面スリーブを停止する必要があります。
+            バッテリーセーバー等の設定を確認して下さい。
+            エラー内容: ${err.name}, ${err.message}`
+        )
     }
 })()
 
