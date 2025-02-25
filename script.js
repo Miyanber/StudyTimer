@@ -92,6 +92,7 @@ class Timer {
     }
 
     resumeTimer() {
+        requestWakeLock();
         worker.postMessage({ name: "startTimer" });
         timer_status.classList.remove("restart");
         timer_status.classList.add("pause");
@@ -100,6 +101,7 @@ class Timer {
     }
 
     pauseTimer() {
+        releaseWakeLock();
         worker.postMessage({ name: "pauseTimer" });
         timer_status.classList.add("restart");
         timer_status.classList.remove("pause");
@@ -202,17 +204,17 @@ let wakeLock = null;
 if ("wakeLock" in navigator) {
     // isSupported = true;
     console.log("起動ロック API に対応しています。");
+    alert("Study Timer では、タイマーを継続して起動させるため、画面スリーブを停止しています。");
 } else {
     // wakeButton.disabled = true;
-    alert("このブラウザーは起動ロックに対応していません。");
+    alert("このブラウザーは起動ロックに対応していません。Study Timer では、タイマーを継続して起動させるため、画面スリーブを停止する必要があります。");
 }
 
 // 非同期関数を作成して起動ロックをリクエスト
-(async () => {
+async function requestWakeLock() {
     try {
         wakeLock = await navigator.wakeLock.request("screen");
         console.log("起動ロックが有効です。");
-        alert("Study Timer では、タイマーを継続して起動させるため、画面スリーブを停止しています。")
     } catch (err) {
         // 起動ロックのリクエストに失敗。ふつうはバッテリーなどのシステム関連
         console.warn(`${err.name}, ${err.message}`);
@@ -223,7 +225,16 @@ if ("wakeLock" in navigator) {
             エラー内容: ${err.name}, ${err.message}`
         )
     }
-})()
+}
+
+async function releaseWakeLock() {
+    if (wakeLock !== null) {
+        await wakeLock.release().then(() => {
+            wakeLock = null;
+            console.log("起動ロックを解除しました。");
+        });
+    }
+}
 
 document.addEventListener("visibilitychange", async () => {
     if (wakeLock !== null && document.visibilityState === "visible") {
