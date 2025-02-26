@@ -199,6 +199,8 @@ if ("wakeLock" in navigator) {
 
 // 起動ロックの参照を作成
 let wakeLock = null;
+// wakeLockを解放すべきか
+let shouldReleaseWakeLock = false;
 
 // wakeLock 対応確認
 if ("wakeLock" in navigator) {
@@ -212,13 +214,16 @@ if ("wakeLock" in navigator) {
 
 // 非同期関数を作成して起動ロックをリクエスト
 async function requestWakeLock() {
+    shouldReleaseWakeLock = false;
     try {
         wakeLock = await navigator.wakeLock.request("screen");
         console.log("起動ロックが有効です。");
 
         // 何らかの原因（10分経過等）により解放された場合、再リクエスト
         wakeLock.addEventListener("release", async () => {
-            wakeLock = await navigator.wakeLock.request("screen");
+            if (!shouldReleaseWakeLock) {
+                wakeLock = await navigator.wakeLock.request("screen");
+            }
         });
 
     } catch (err) {
@@ -234,6 +239,7 @@ async function requestWakeLock() {
 }
 
 async function releaseWakeLock() {
+    shouldReleaseWakeLock = true;
     if (wakeLock !== null) {
         await wakeLock.release().then(() => {
             wakeLock = null;
