@@ -215,6 +215,12 @@ async function requestWakeLock() {
     try {
         wakeLock = await navigator.wakeLock.request("screen");
         console.log("起動ロックが有効です。");
+
+        // 何らかの原因（10分経過等）により解放された場合、再リクエスト
+        wakeLock.addEventListener("release", async () => {
+            wakeLock = await navigator.wakeLock.request("screen");
+        });
+
     } catch (err) {
         // 起動ロックのリクエストに失敗。ふつうはバッテリーなどのシステム関連
         console.warn(`${err.name}, ${err.message}`);
