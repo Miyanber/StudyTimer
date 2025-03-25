@@ -54,7 +54,7 @@ class StudyTimer extends WorkerTimer {
 class BreakTimer extends WorkerTimer {
     timerFunction() {
         this.remainingTimerTicks -= 1;
-        if (this.remainingTimerTicks == 0) {
+        if (this.remainingTimerTicks <= 0) {
             clearInterval(this.timerInterval);
             postMessage({ name: "to_study" });
         }
