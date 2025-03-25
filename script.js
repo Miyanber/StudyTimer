@@ -75,7 +75,12 @@ class Timer {
     }
 
     startTimer() {
-        timer.resumeTimer();
+        worker.postMessage({ name: "startTimer" });
+        requestWakeLock();
+        timer_status.classList.remove("restart");
+        timer_status.classList.add("pause");
+        timer_status.textContent = "一時停止";
+        delete_button.disabled = true;
         study_time.disabled = true;
         break_time.disabled = true;
     }
@@ -93,8 +98,8 @@ class Timer {
     }
 
     resumeTimer() {
+        worker.postMessage({ name: "resumeTimer" });
         requestWakeLock();
-        worker.postMessage({ name: "startTimer" });
         timer_status.classList.remove("restart");
         timer_status.classList.add("pause");
         timer_status.textContent = "一時停止";
@@ -123,7 +128,17 @@ class Timer {
                 `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
         }
     }
+
+    restoreTimer() {
+        localStorage.getItem("timerDuration");
+        localStorage.getItem("startDateTime");
+    }
 }
+
+window.addEventListener('beforeunload', (e) => {
+    e.preventDefault();
+    return
+})
 
 let timer = new Timer(0);
 

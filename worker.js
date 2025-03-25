@@ -1,13 +1,13 @@
-class Timer {
+class WorkerTimer {
     /**
      * 内部処理は全て秒
      * @param {Number} timer_min タイマー時間(分)
      */
     constructor(timer_min) {
         this.timerDuration = timer_min * 60;
-        this.startDateTime = new Date();
+        this.startTime = new Date().getTime();
         this.TIMER_COUNT = this.timerDuration * 50;
-        this.timerCount = this.timerDuration * 50;
+        this.remainingTimerTicks = this.timerDuration * 50;
         this.timerInterval = null;
     }
 
@@ -16,20 +16,22 @@ class Timer {
 
             this.timerFunction();
 
-            if (this.timerCount % 50 == 0) {
-                let timerSeconds = this.timerDuration - Math.floor((new Date().getTime() - this.startDateTime.getTime()) / 1000);
-                this.timerCount = timerSeconds * 50;
+            if (this.remainingTimerTicks % 50 == 0) {
+                let timerSeconds = this.timerDuration - Math.floor((new Date().getTime() - this.startTime) / 1000);
+                this.remainingTimerTicks = timerSeconds * 50;
                 postMessage({ name: "setTimerDisplay", param: timerSeconds })
             }
 
         }, 1000 / 50);
-        if (this.TIMER_COUNT == this.timerCount) {
-            postMessage({ name: "setTimerDisplay", param: this.timerDuration })
-        }
+    }
+
+    resumeTimer() {
+        this.startTime = new Date().getTime() - Math.floor((this.TIMER_COUNT - this.remainingTimerTicks) / 50 * 1000);
+        this.startTimer();
     }
 
     pauseTimer() {
-        clearInterval(this.timerInterval)
+        clearInterval(this.timerInterval);
     }
 
     timerFunction() {
@@ -37,30 +39,31 @@ class Timer {
     }
 }
 
-class StudyTimer extends Timer {
+class StudyTimer extends WorkerTimer {
     timerFunction() {
-        this.timerCount -= 1;
-        if (this.timerCount == 0) {
+        this.remainingTimerTicks -= 1;
+        if (this.remainingTimerTicks <= 0) {
             clearInterval(this.timerInterval);
             postMessage({ name: "to_break" });
         }
-        const degree = 360 - Math.floor((360 / this.TIMER_COUNT * this.timerCount) * 100) / 100;
+        const degree = 360 - Math.floor((360 / this.TIMER_COUNT * this.remainingTimerTicks) * 100) / 100;
         postMessage({ name: "circle_study", degree: degree });
     }
 }
 
-class BreakTimer extends Timer {
+class BreakTimer extends WorkerTimer {
     timerFunction() {
-        this.timerCount -= 1;
-        if (this.timerCount == 0) {
+        this.remainingTimerTicks -= 1;
+        if (this.remainingTimerTicks == 0) {
             clearInterval(this.timerInterval);
             postMessage({ name: "to_study" });
         }
-        const degree = 360 - Math.floor((360 / this.TIMER_COUNT * this.timerCount) * 100) / 100;
+        const degree = 360 - Math.floor((360 / this.TIMER_COUNT * this.remainingTimerTicks) * 100) / 100;
         postMessage({ name: "circle_break", degree: degree });
     }
 }
 
+/** @type {WorkerTimer} */
 let timer;
 
 onmessage = function (e) {
@@ -76,6 +79,9 @@ onmessage = function (e) {
             break;
         case "pauseTimer":
             timer.pauseTimer();
+            break;
+        case "resumeTimer":
+            timer.resumeTimer();
             break;
         default:
             break;
