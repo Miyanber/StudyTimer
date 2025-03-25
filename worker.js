@@ -4,60 +4,60 @@ class Timer {
      * @param {Number} timer_min タイマー時間(分)
      */
     constructor(timer_min) {
-        this.timer_sec = timer_min * 60;
-        this.TIMER_COUNT = this.timer_sec * 50;
-        this.timer_count = this.timer_sec * 50;
-        this.timer_interval = null;
+        this.timerDuration = timer_min * 60;
+        this.startDateTime = new Date();
+        this.TIMER_COUNT = this.timerDuration * 50;
+        this.timerCount = this.timerDuration * 50;
+        this.timerInterval = null;
     }
 
     startTimer() {
-        const timer_interval = setInterval(() => {
-            this.timer_function(timer_interval)
+        this.timerInterval = setInterval(() => {
+
+            this.timerFunction();
+
+            if (this.timerCount % 50 == 0) {
+                let timerSeconds = this.timerDuration - Math.floor((new Date().getTime() - this.startDateTime.getTime()) / 1000);
+                this.timerCount = timerSeconds * 50;
+                postMessage({ name: "setTimerDisplay", param: timerSeconds })
+            }
+
         }, 1000 / 50);
-        this.timer_interval = timer_interval;
-        if (this.TIMER_COUNT == this.timer_count) {
-            postMessage({ name: "setTimerDisplay", param: this.timer_sec })
+        if (this.TIMER_COUNT == this.timerCount) {
+            postMessage({ name: "setTimerDisplay", param: this.timerDuration })
         }
     }
 
     pauseTimer() {
-        clearInterval(this.timer_interval)
+        clearInterval(this.timerInterval)
     }
 
-    timer_function(timer_interval) {
+    timerFunction() {
         return
     }
 }
 
 class StudyTimer extends Timer {
-    timer_function(timer_interval) {
-        this.timer_count -= 1;
-        if (this.timer_count == 0) {
-            clearInterval(timer_interval);
+    timerFunction() {
+        this.timerCount -= 1;
+        if (this.timerCount == 0) {
+            clearInterval(this.timerInterval);
             postMessage({ name: "to_break" });
         }
-        const degree = 360 - Math.floor((360 / this.TIMER_COUNT * this.timer_count) * 100) / 100;
+        const degree = 360 - Math.floor((360 / this.TIMER_COUNT * this.timerCount) * 100) / 100;
         postMessage({ name: "circle_study", degree: degree });
-        if (this.timer_count % 50 == 0) {
-            let timer_sec = this.timer_count / 50;
-            postMessage({ name: "setTimerDisplay", param: timer_sec })
-        }
     }
 }
 
 class BreakTimer extends Timer {
-    timer_function(timer_interval) {
-        this.timer_count -= 1;
-        if (this.timer_count == 0) {
-            clearInterval(timer_interval);
+    timerFunction() {
+        this.timerCount -= 1;
+        if (this.timerCount == 0) {
+            clearInterval(this.timerInterval);
             postMessage({ name: "to_study" });
         }
-        const degree = 360 - Math.floor((360 / this.TIMER_COUNT * this.timer_count) * 100) / 100;
+        const degree = 360 - Math.floor((360 / this.TIMER_COUNT * this.timerCount) * 100) / 100;
         postMessage({ name: "circle_break", degree: degree });
-        if (this.timer_count % 50 == 0) {
-            let timer_sec = this.timer_count / 50;
-            postMessage({ name: "setTimerDisplay", param: timer_sec })
-        }
     }
 }
 
