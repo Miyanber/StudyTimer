@@ -20,6 +20,7 @@ const break_time = document.getElementById("break_time");
 break_time.value = localStorage.getItem("break_time");
 setTimerDisplay(study_time.value * 60);
 
+/** @type {Worker | null} */
 let worker;
 
 class Timer {
@@ -199,8 +200,8 @@ if ("wakeLock" in navigator) {
 
 // 起動ロックの参照を作成
 let wakeLock = null;
-// wakeLockを解放すべきか
-let shouldReleaseWakeLock = false;
+// 起動ロックが有効かどうかを示すフラグ
+let isActiveScreen = false;
 
 // wakeLock 対応確認
 if ("wakeLock" in navigator) {
@@ -214,17 +215,10 @@ if ("wakeLock" in navigator) {
 
 // 非同期関数を作成して起動ロックをリクエスト
 async function requestWakeLock() {
-    shouldReleaseWakeLock = false;
+    isActiveScreen = true;
     try {
         wakeLock = await navigator.wakeLock.request("screen");
         console.log("起動ロックが有効です。");
-
-        // 何らかの原因（10分経過等）により解放された場合、再リクエスト
-        wakeLock.addEventListener("release", async () => {
-            if (!shouldReleaseWakeLock) {
-                wakeLock = await navigator.wakeLock.request("screen");
-            }
-        });
 
     } catch (err) {
         // 起動ロックのリクエストに失敗。ふつうはバッテリーなどのシステム関連
@@ -239,7 +233,7 @@ async function requestWakeLock() {
 }
 
 async function releaseWakeLock() {
-    shouldReleaseWakeLock = true;
+    isActiveScreen = true;
     if (wakeLock !== null) {
         await wakeLock.release().then(() => {
             wakeLock = null;
