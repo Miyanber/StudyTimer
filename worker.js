@@ -3,11 +3,19 @@ class WorkerTimer {
      * 内部処理は全て秒
      * @param {Number} timerDuration タイマー時間(分)
      */
-    constructor(timerDuration) {
-        this.timerDuration = timerDuration * 60;
-        this.startTime = new Date().getTime();
-        this.TIMER_COUNT = this.timerDuration * 50;
-        this.remainingTimerTicks = this.timerDuration * 50;
+    constructor(timerDuration, workerTimerBackupData = null) {
+        if (!workerTimerBackupData) {
+            this.timerDuration = timerDuration * 60;
+            this.startTime = new Date().getTime();
+            this.TIMER_COUNT = this.timerDuration * 50;
+            this.remainingTimerTicks = this.timerDuration * 50;
+        } else {
+            this.timerDuration = Number(workerTimerBackupData.timerDuration);
+            this.startTime = Number(workerTimerBackupData.startTime);
+            this.TIMER_COUNT = Number(workerTimerBackupData.TIMER_COUNT);
+            this.remainingTimerTicks = Number(workerTimerBackupData.remainingTimerTicks);
+            console.log(workerTimerBackupData)
+        }
         this.setTimerInterval();
     }
 
@@ -23,7 +31,7 @@ class WorkerTimer {
     setTimerInterval() {
         this.timerInterval = setInterval(() => {
             if (this.remainingTimerTicks == this.TIMER_COUNT) {
-                postMessage({ name: "updateTimeLeft", param: this.timerDuration })
+                postMessage({ name: "updateTimeLeft", timerSeconds: this.timerDuration, backupData: this.getBackupData() })
             }
 
             this.remainingTimerTicks -= 1;
@@ -31,7 +39,7 @@ class WorkerTimer {
             if (this.remainingTimerTicks % 50 == 0) {
                 let timerSeconds = this.timerDuration - Math.floor((new Date().getTime() - this.startTime) / 1000);
                 this.remainingTimerTicks = timerSeconds * 50;
-                postMessage({ name: "updateTimeLeft", param: timerSeconds })
+                postMessage({ name: "updateTimeLeft", timerSeconds: timerSeconds, backupData: this.getBackupData() })
             }
 
             if (this.remainingTimerTicks <= 0) {
@@ -43,6 +51,15 @@ class WorkerTimer {
             postMessage({ name: "updateProgress", degree: degree });
 
         }, 1000 / 50);
+    }
+
+    getBackupData() {
+        return {
+            timerDuration: this.timerDuration,
+            startTime: this.startTime,
+            TIMER_COUNT: this.TIMER_COUNT,
+            remainingTimerTicks: this.remainingTimerTicks,
+        }
     }
 }
 
@@ -60,6 +77,8 @@ onmessage = function (e) {
         case "resumeTimer":
             workerTimer.resumeTimer();
             break;
+        case "restoreTimer":
+            workerTimer = new WorkerTimer(0, e.data.workerTimerBackupData);
         default:
             break;
     }
