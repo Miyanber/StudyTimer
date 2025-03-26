@@ -10,24 +10,18 @@ body {
 }
 
 header {
-    position: absolute;
-    background-color: rgb(0, 92, 221);
     width: 100%;
-    top: 0;
-    height: 10%;
     z-index: 200;
 }
 
 header h1 {
-    position: absolute;
+    font-size: 1.5em;
+    margin: 0;
+    padding: .5em 2.5em .5em 1em;
     color: var(--white);
-    text-align: center;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    height: max-content;
+    width: max-content;
+    background-color: rgb(0, 92, 221);
+    clip-path: polygon(0 0, 100% 0%, 80% 100%, 0% 100%);
 }
 
 .hidden {
@@ -194,7 +188,7 @@ input:disabled {
     }
 }
 
-div.notification {
+.notification {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -202,29 +196,37 @@ div.notification {
     left: 0;
     background-color: #ffffff84;
     z-index: 100;
+    transition: .8s background-color;
 }
 
-div.notification.hidden {
+.notification.hidden {
     top: 0%;
 }
 
-div.notification p {
+.notification div {
     position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 90%;
     left: 0;
     right: 0;
     margin: auto;
     bottom: 2%;
     background-color: rgb(30, 30, 30);
-    border-radius: 10px;
-    border: 3px solid rgb(60, 60, 60);
+    border-radius: 50px;
     padding: 15px 5px;
     text-align: center;
-    transition: 1s;
     z-index: 101;
+    box-shadow: 5px 5px 15px #000f3c9f;
 }
 
-div.notification button {
+.notification .message {
+    display: inline-block;
+    ;
+}
+
+.notification button {
     padding: 10px;
     background-color: rgb(80, 80, 80);
     color: var(--white);
@@ -320,33 +322,6 @@ div.notification button {
     text-align: center;
 }
 
-/* p.status {
-    padding: 15px 10px;
-    box-sizing: border-box;
-    width: 90%;
-    opacity: 0;
-}
-
-p.status.displayStatus {
-    animation: fade_in 0.8s linear;
-}
-
-p.status.hideStatus {
-    animation: fade_in 0.8s linear reverse;
-}
-
-@keyframes fade_in {
-    from {
-        opacity: 0;
-        transform: translateY(100%);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0%);
-    }
-} */
-
 @media screen and (max-height: 600px) {
     .timer {
         top: 50%;
@@ -365,7 +340,7 @@ p.status.hideStatus {
         text-align: center;
         width: max-content;
     }
-    
+
     .settings input {
         width: 5em;
         padding: .5em;
@@ -379,7 +354,7 @@ p.status.hideStatus {
         width: max-content;
         right: 25%;
         transform: translateX(50%);
-    
+
         button {
             width: max-content;
             min-width: 10em;

@@ -21,12 +21,17 @@
     </header>
 
     <div class="notification hidden" id="notification_to_break">
-        <p>勉強お疲れ様です。<button id="start_break">休憩開始</button></p>
+        <div>
+            <span class="message">勉強お疲れ様です。</span>
+            <button type="button" id="start_break">休憩開始</button>
+        </div>
     </div>
     <div class="hidden notification" id="notification_to_study">
-        <p>休憩できましたか？<button id="start_study">勉強開始</button></p>
+        <div>
+            <span class="message">休憩できましたか？</span>
+            <button type="button" id="start_study">勉強開始</button>
+        </div>
     </div>
-    <!-- <p class="status"></p> -->
 
     <div class="settings">
         <p><label for="study_time">勉強時間(分)</label><input type="number" name="study_time" id="study_time" value="45" min="0"></p>

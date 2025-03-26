@@ -44,24 +44,24 @@ class Timer {
 
         /** @type {Worker | null} */
         this.worker = new Worker("worker.js");
-        this.worker.onmessage = function (e) {
+        this.worker.onmessage = async function (e) {
             switch (e.data.name) {
                 case "timerExpired":
                     if (timerType === "study") {
-                        toStudyNotification.classList.add("active");
-                        toStudyNotification.classList.remove("hidden");
-                        studyStartAudio.play();
-                    } else {
+                        await breakStartAudio.play();
                         toBreakNotification.classList.add("active");
                         toBreakNotification.classList.remove("hidden");
-                        breakStartAudio.play();
+                    } else {
+                        await studyStartAudio.play();
+                        toStudyNotification.classList.add("active");
+                        toStudyNotification.classList.remove("hidden");
                     }
                     this.timerStatus = "expired";
                     break;
                 case "updateProgress":
                     if (timerType === "study") {
                         studyCircle.style.background =
-                            `conic-gradient(#799aff 0deg ${e.data.degree}deg, #333 ${e.data.degree}deg 360deg)`;
+                            `conic-gradient(#799aff 0deg ${e.data.degree}deg, #333333 ${e.data.degree}deg 360deg)`;
                     } else {
                         breakCircle.style.background =
                             `conic-gradient(#ff6060 0deg ${e.data.degree}deg, #505050 ${e.data.degree}deg 360deg)`;
@@ -177,16 +177,7 @@ timerElement.addEventListener("click", () => {
         }
     }
     timer = new Timer("study", studyDuration.value);
-})
-
-timerElement.addEventListener("click", () => {
-    if (breakStartAudio) {
-        breakStartAudio.load();
-    }
-    if (studyStartAudio) {
-        studyStartAudio.load();
-    }
-}, { once: true })
+});
 
 deleteButton.addEventListener("click", () => {
     timer.resetTimer();
@@ -350,11 +341,13 @@ selectMusicButton.addEventListener("click", async () => {
         studyStartAudio.pause();
     }
     studyStartAudio = await saveAudio("studyMusic");
-
+    studyStartAudio.load();
+    
     if (breakStartAudio) {
         breakStartAudio.pause();
     }
     breakStartAudio = await saveAudio("breakMusic");
+    breakStartAudio.load();
 
     fileInput1.disabled = false;
     fileInput2.disabled = false;
