@@ -18,19 +18,25 @@
 <body>
     <header>
         <h1>Study Timer</h1>
+        <span class="author">by Miyanber</span>
     </header>
 
     <div class="notification hidden" id="notification_to_break">
-        <div>
+        <div class="message_container">
             <span class="message">勉強お疲れ様です。</span>
             <button type="button" id="start_break">休憩開始</button>
         </div>
     </div>
     <div class="hidden notification" id="notification_to_study">
-        <div>
+        <div class="message_container">
             <span class="message">休憩できましたか？</span>
             <button type="button" id="start_study">勉強開始</button>
         </div>
+    </div>
+
+    <div class="dateTime">
+        <div id="date" class="date"></div>
+        <div id="time" class="time"></div>
     </div>
 
     <div class="settings">
@@ -41,7 +47,7 @@
     <div class="timer" id="timer">
         <div class="circle"></div>
         <div class="circle_break"></div>
-        <div class="time">
+        <div class="timer_container">
             <div>
                 残り時間 (分)
             </div>

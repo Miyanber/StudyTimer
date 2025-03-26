@@ -1,3 +1,24 @@
+const dateElement = document.getElementById("date");
+const timeElement = document.getElementById("time");
+const days = ['日', '月', '火', '水', '木', '金', '土']
+
+function zeroPadding(number) {
+    if (number < 10) {
+        return `0${number}`;
+    }
+    return number;
+}
+
+setInterval(() => {
+    const todayDate = new Date();
+    dateElement.innerHTML
+        = `令和<span class="highlight">${todayDate.getFullYear() - 2018}</span>年
+    <span class="highlight">${todayDate.getMonth() + 1}</span>月<span class="highlight">${todayDate.getDate()}</span>日
+    <span class="highlight">${days[todayDate.getDay()]}</span>曜日`;
+    timeElement.innerHTML
+        = `<span class="highlight">${todayDate.getHours()}</span>時 <span class="highlight">${zeroPadding(todayDate.getMinutes())}</span>分`;
+}, 1000);
+
 const studyCircle = document.querySelector("div.circle"),
     breakCircle = document.querySelector("div.circle_break"),
     minutes = document.querySelector("span.minutes"),
@@ -342,7 +363,7 @@ selectMusicButton.addEventListener("click", async () => {
     }
     studyStartAudio = await saveAudio("studyMusic");
     studyStartAudio.load();
-    
+
     if (breakStartAudio) {
         breakStartAudio.pause();
     }
