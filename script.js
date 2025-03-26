@@ -1,207 +1,204 @@
-const div_circle_study = document.querySelector("div.circle"),
-    div_circle_break = document.querySelector("div.circle_break"),
+const studyCircle = document.querySelector("div.circle"),
+    breakCircle = document.querySelector("div.circle_break"),
     minutes = document.querySelector("span.minutes"),
     seconds = document.querySelector("span.seconds"),
-    notification_to_break = document.getElementById("notification_to_break"),
-    notification_to_study = document.getElementById("notification_to_study"),
-    start_break_button = document.getElementById("start_break"),
-    start_study_button = document.getElementById("start_study");
-let start_study_audio = null,
-    start_break_audio = null;
+    toBreakNotification = document.getElementById("notification_to_break"),
+    toStudyNotification = document.getElementById("notification_to_study"),
+    startBreakButton = document.getElementById("start_break"),
+    startStudyButton = document.getElementById("start_study");
+
+/** @type {HTMLAudioElement | null} */
+let studyStartAudio = null
+/** @type {HTMLAudioElement | null} */
+let breakStartAudio = null;
 
 
-const timer_division = document.getElementById("timer");
-const timer_status = document.getElementById("timer_status");
-const delete_button = document.getElementById("delete");
-const save_button = document.getElementById("save");
-const study_time = document.getElementById("study_time");
-study_time.value = localStorage.getItem("study_time");
-const break_time = document.getElementById("break_time");
-break_time.value = localStorage.getItem("break_time");
-setTimerDisplay(study_time.value * 60);
+const timerElement = document.getElementById("timer");
+const timerStatus = document.getElementById("timer_status");
+const deleteButton = document.getElementById("delete");
+const saveButton = document.getElementById("save");
+const studyDuration = document.getElementById("study_time");
+studyDuration.value = localStorage.getItem("study_time");
+const breakDuration = document.getElementById("break_time");
+breakDuration.value = localStorage.getItem("break_time");
+updateTimeLeft(studyDuration.value * 60);
 
-/** @type {Worker | null} */
-let worker;
-
-class Timer {
-    /**
-     * 内部処理は全て秒
-     * @param {Number} timer_min タイマー時間(分)
-     */
-    constructor(timer_min) {
-        if (timer_min == 0 || timer_min == null) {
-            this.timer_min = 1 / 60;
-        } else {
-            this.timer_min = timer_min;
-        }
-    }
-
-    setTimer(timerType) {
-        worker = new Worker("worker.js");
-
-        worker.onmessage = function (e) {
-            switch (e.data.name) {
-                case "to_break":
-                    notification_to_break.classList.remove("hidden");
-                    start_break_audio.play();
-                    break;
-                case "circle_study":
-                    div_circle_study.style.background =
-                        `conic-gradient(#799aff 0deg ${e.data.degree}deg, #333 ${e.data.degree}deg 360deg)`;
-                    break;
-                case "setTimerDisplay":
-                    setTimerDisplay(e.data.param);
-                    break;
-                case "to_study":
-                    notification_to_study.classList.remove("hidden");
-                    start_study_audio.play();
-                    break;
-                case "circle_break":
-                    div_circle_break.style.background =
-                        `conic-gradient(#ff6060 0deg ${e.data.degree}deg, #505050 ${e.data.degree}deg 360deg)`;
-                    break;
-                default:
-                    break;
-            }
-        }
-        switch (timerType) {
-            case "study":
-                worker.postMessage({ name: "setTimer_study", timer_sec: this.timer_min });
-                break;
-            case "break":
-                worker.postMessage({ name: "setTimer_break", timer_sec: this.timer_min });
-                break;
-        }
-    }
-
-    startTimer() {
-        worker.postMessage({ name: "startTimer" });
-        requestWakeLock();
-        timer_status.classList.remove("restart");
-        timer_status.classList.add("pause");
-        timer_status.textContent = "一時停止";
-        delete_button.disabled = true;
-        study_time.disabled = true;
-        break_time.disabled = true;
-    }
-
-    startStudyTimer() {
-        timer = new Timer(study_time.value);
-        timer.setTimer("study");
-        timer.startTimer();
-    }
-
-    startBreakTimer() {
-        timer = new Timer(break_time.value);
-        timer.setTimer("break");
-        timer.startTimer();
-    }
-
-    resumeTimer() {
-        worker.postMessage({ name: "resumeTimer" });
-        requestWakeLock();
-        timer_status.classList.remove("restart");
-        timer_status.classList.add("pause");
-        timer_status.textContent = "一時停止";
-        delete_button.disabled = true;
-    }
-
-    pauseTimer() {
-        releaseWakeLock();
-        worker.postMessage({ name: "pauseTimer" });
-        timer_status.classList.add("restart");
-        timer_status.classList.remove("pause");
-        timer_status.textContent = "再開";
-        delete_button.disabled = false;
-    }
-
-    resetTimer() {
-        if (worker) {
-            worker.terminate();
-            timer_status.classList.remove("restart");
-            timer_status.textContent = "タップして開始";
-            study_time.disabled = false;
-            break_time.disabled = false;
-            div_circle_study.style.background =
-                `conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg)`;
-            div_circle_break.style.background =
-                `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
-        }
-    }
-
-    restoreTimer() {
-        localStorage.getItem("timerDuration");
-        localStorage.getItem("startDateTime");
-    }
-}
 
 window.addEventListener('beforeunload', (e) => {
     e.preventDefault();
     return
 })
 
-let timer = new Timer(0);
+class Timer {
+    /**
+     * @param {string} timerType タイマーの種類 `"study"` | `"break"`
+     * @param {Number} duration タイマー時間 (分)
+     */
+    constructor(timerType, duration) {
+        this.timerType = timerType;
+        if (duration == 0 || duration == null) {
+            this.duration = 1 / 60;
+        } else {
+            this.duration = duration;
+        }
 
-function setTimerDisplay(timer_sec) {
-    let timer_min = Math.floor(timer_sec / 60);
-    let digits = 2;
-    if (timer_sec >= 100 * 60) digits = 3;
-    minutes.textContent = ("00" + timer_min).slice(-digits);
-    seconds.textContent = `${("00" + (timer_sec % 60)).slice(-2)}`;
+        /** @type {Worker | null} */
+        this.worker = new Worker("worker.js");
+        this.worker.onmessage = function (e) {
+            switch (e.data.name) {
+                case "timerExpired":
+                    if (timerType === "study") {
+                        toStudyNotification.classList.add("active");
+                        toStudyNotification.classList.remove("hidden");
+                        studyStartAudio.play();
+                    } else {
+                        toBreakNotification.classList.add("active");
+                        toBreakNotification.classList.remove("hidden");
+                        breakStartAudio.play();
+                    }
+                    this.timerStatus = "expired";
+                    break;
+                case "updateProgress":
+                    if (timerType === "study") {
+                        studyCircle.style.background =
+                            `conic-gradient(#799aff 0deg ${e.data.degree}deg, #333 ${e.data.degree}deg 360deg)`;
+                    } else {
+                        breakCircle.style.background =
+                            `conic-gradient(#ff6060 0deg ${e.data.degree}deg, #505050 ${e.data.degree}deg 360deg)`;
+                    }
+                    break;
+                case "updateTimeLeft":
+                    updateTimeLeft(e.data.param);
+                    break;
+                default:
+                    break;
+            }
+        }
+        this.worker.postMessage({ name: "startTimer", duration: this.duration });
+
+        requestWakeLock();
+        timerStatus.classList.remove("restart");
+        timerStatus.classList.add("pause");
+        timerStatus.textContent = "一時停止";
+        deleteButton.disabled = true;
+        studyDuration.disabled = true;
+        breakDuration.disabled = true;
+        this.timerStatus = "running";
+    }
+
+    resumeTimer() {
+        this.worker.postMessage({ name: "resumeTimer" });
+        requestWakeLock();
+        timerStatus.classList.remove("restart");
+        timerStatus.classList.add("pause");
+        timerStatus.textContent = "一時停止";
+        deleteButton.disabled = true;
+        this.timerStatus = "running";
+    }
+
+    pauseTimer() {
+        releaseWakeLock();
+        this.worker.postMessage({ name: "pauseTimer" });
+        timerStatus.classList.add("restart");
+        timerStatus.classList.remove("pause");
+        timerStatus.textContent = "再開";
+        deleteButton.disabled = false;
+        this.timerStatus = "pausing";
+    }
+
+    resetTimer() {
+        if (this.worker) {
+            this.worker.terminate();
+            timerStatus.classList.remove("restart");
+            timerStatus.textContent = "タップして開始";
+            studyDuration.disabled = false;
+            breakDuration.disabled = false;
+            studyCircle.style.background =
+                `conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg)`;
+            breakCircle.style.background =
+                `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
+        }
+        this.timerStatus = "expired";
+    }
+
+    restoreTimer() {
+        localStorage.getItem("timerDuration");
+        localStorage.getItem("startDateTime");
+    }
+
+    getTimerStatus() {
+        return this.timerStatus;
+    }
 }
 
-study_time.addEventListener("input", () => {
-    setTimerDisplay(study_time.value * 60);
+/** @type {Timer | null} */
+let timer = null;
+
+function updateTimeLeft(timerSeconds) {
+    let timerMinutes = Math.floor(timerSeconds / 60);
+    let digits = 2;
+    if (timerSeconds >= 100 * 60) digits = 3;
+    minutes.textContent = ("00" + timerMinutes).slice(-digits);
+    seconds.textContent = `${("00" + (timerSeconds % 60)).slice(-2)}`;
+}
+
+startBreakButton.addEventListener("click", () => {
+    breakStartAudio.pause();
+    breakStartAudio.currentTime = 0;
+    toBreakNotification.classList.add("hidden");
+    toBreakNotification.classList.remove("active");
+    timer = new Timer("break", breakDuration.value);
 });
 
-timer_division.addEventListener("click", () => {
-    if (timer_status.classList.contains("restart")) {
-        timer.resumeTimer();
-    } else if (timer_status.classList.contains("pause")) {
-        timer.pauseTimer();
-    } else {
-        timer.startStudyTimer();
+startStudyButton.addEventListener("click", () => {
+    studyStartAudio.pause();
+    studyStartAudio.currentTime = 0;
+    toStudyNotification.classList.add("hidden");
+    toStudyNotification.classList.remove("active");
+    studyCircle.style.background =
+        `conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg)`;
+    breakCircle.style.background =
+        `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
+    timer = new Timer("study", studyDuration.value);
+});
+
+studyDuration.addEventListener("input", () => {
+    updateTimeLeft(studyDuration.value * 60);
+});
+
+timerElement.addEventListener("click", () => {
+    if (timer) {
+        if (timer.getTimerStatus() === "running") {
+            timer.pauseTimer();
+            return
+        } else if (timer.getTimerStatus() === "pausing") {
+            timer.resumeTimer();
+            return
+        }
     }
+    timer = new Timer("study", studyDuration.value);
 })
 
-timer_division.addEventListener("click", () => {
-    if (start_break_audio) {
-        start_break_audio.load();
+timerElement.addEventListener("click", () => {
+    if (breakStartAudio) {
+        breakStartAudio.load();
     }
-    if (start_study_audio) {
-        start_study_audio.load();
+    if (studyStartAudio) {
+        studyStartAudio.load();
     }
 }, { once: true })
 
-delete_button.addEventListener("click", () => {
+deleteButton.addEventListener("click", () => {
     timer.resetTimer();
-    setTimerDisplay(study_time.value * 60);
+    updateTimeLeft(studyDuration.value * 60);
 });
 
-save_button.addEventListener("click", () => {
+saveButton.addEventListener("click", () => {
     // 設定を保存
-    localStorage.setItem("study_time", study_time.value);
-    localStorage.setItem("break_time", break_time.value);
+    localStorage.setItem("study_time", studyDuration.value);
+    localStorage.setItem("break_time", breakDuration.value);
     alert("勉強・休憩時間の設定がブラウザに保存されました。")
 });
-
-start_break_button.addEventListener("click", () => {
-    start_break_audio.pause();
-    start_break_audio.currentTime = 0;
-    notification_to_break.classList.add("hidden");
-    timer.startBreakTimer();
-})
-
-start_study_button.addEventListener("click", () => {
-    start_study_audio.pause();
-    start_study_audio.currentTime = 0;
-    notification_to_study.classList.add("hidden");
-    div_circle_study.style.background =
-        `conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg)`;
-    div_circle_break.style.background =
-        `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
-    timer.startStudyTimer();
-})
 
 //### ここから 画面起動ロック API ###
 
@@ -275,6 +272,7 @@ request.onerror = (event) => {
     console.error('Error opening IndexedDB:', event.target.errorCode);
 };
 
+/** @return {Promise<HTMLAudioElement | null>} */
 function getAudio(id) {
     return new Promise((resolve, reject) => {
         let audioElement;
@@ -307,16 +305,16 @@ function getAudio(id) {
 request.onsuccess = async (event) => {
     db = event.target.result;
 
-    start_study_audio = await getAudio("studyMusic");
-    if (!start_study_audio) {
+    studyStartAudio = await getAudio("studyMusic");
+    if (!studyStartAudio) {
         document.getElementById("studyMusic_currentAudio").textContent = "未設定";
     }
-    start_break_audio = await getAudio("breakMusic");
-    if (!start_break_audio) {
+    breakStartAudio = await getAudio("breakMusic");
+    if (!breakStartAudio) {
         document.getElementById("breakMusic_currentAudio").textContent = "未設定";
     }
 
-    if (!start_study_audio || !start_break_audio) {
+    if (!studyStartAudio || !breakStartAudio) {
         alert("アラーム音が設定されていません。画面下部の「アラーム音の設定」ボタンから、アラーム音を設定してください。");
     }
 };
@@ -348,15 +346,15 @@ selectMusicButton.addEventListener("click", async () => {
     fileInput1.disabled = true;
     fileInput2.disabled = true;
 
-    if (start_study_audio) {
-        start_study_audio.pause();
+    if (studyStartAudio) {
+        studyStartAudio.pause();
     }
-    start_study_audio = await saveAudio("studyMusic");
+    studyStartAudio = await saveAudio("studyMusic");
 
-    if (start_break_audio) {
-        start_break_audio.pause();
+    if (breakStartAudio) {
+        breakStartAudio.pause();
     }
-    start_break_audio = await saveAudio("breakMusic");
+    breakStartAudio = await saveAudio("breakMusic");
 
     fileInput1.disabled = false;
     fileInput2.disabled = false;
