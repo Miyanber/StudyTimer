@@ -33,16 +33,17 @@ let studyStartAudio = null
 /** @type {HTMLAudioElement | null} */
 let breakStartAudio = null;
 
+/** @type {Timer | null} */
+let timer = null;
 
 const timerElement = document.getElementById("timer");
 const timerStatus = document.getElementById("timer_status");
 const deleteButton = document.getElementById("delete");
 const saveButton = document.getElementById("save");
 const studyDuration = document.getElementById("study_time");
-studyDuration.value = localStorage.getItem("study_time");
+studyDuration.value = localStorage.getItem("defaultStudyDuration");
 const breakDuration = document.getElementById("break_time");
-breakDuration.value = localStorage.getItem("break_time");
-updateTimeLeft(studyDuration.value * 60);
+breakDuration.value = localStorage.getItem("defaultBreakDuration");
 
 
 window.addEventListener('beforeunload', (e) => {
@@ -54,26 +55,33 @@ class Timer {
     /**
      * @param {string} timerType タイマーの種類 `"study"` | `"break"`
      * @param {Number} duration タイマー時間 (分)
+     * @param {boolean} restore タイマーをリストアするかどうか
      */
-    constructor(timerType, duration) {
+    constructor(timerType, duration, restore = false) {
         this.timerType = timerType;
         if (duration == 0 || duration == null) {
             this.duration = 1 / 60;
         } else {
             this.duration = duration;
         }
+        this.timerStatus = "running";
 
         /** @type {Worker | null} */
         this.worker = new Worker("worker.js");
         this.worker.onmessage = async function (e) {
             switch (e.data.name) {
                 case "timerExpired":
+                    // インスタンス生成がまだのため（？）timerTypeはthis.で参照できない
                     if (timerType === "study") {
-                        await breakStartAudio.play();
+                        if (breakStartAudio) {
+                            await breakStartAudio.play();
+                        }
                         toBreakNotification.classList.add("active");
                         toBreakNotification.classList.remove("hidden");
                     } else {
-                        await studyStartAudio.play();
+                        if (studyStartAudio) {
+                            await studyStartAudio.play();
+                        }
                         toStudyNotification.classList.add("active");
                         toStudyNotification.classList.remove("hidden");
                     }
@@ -89,14 +97,20 @@ class Timer {
                     }
                     break;
                 case "updateTimeLeft":
-                    updateTimeLeft(e.data.param);
+                    updateTimeLeft(e.data.timerSeconds);
+                    backupTimerData(e.data.backupData, this.timerType, this.duration, this.timerStatus);
                     break;
                 default:
                     break;
             }
         }
-        this.worker.postMessage({ name: "startTimer", duration: this.duration });
 
+        if (restore) {
+            // タイマーをリストアする場合は後でrestoreTimerを実行
+            return;
+        }
+
+        this.worker.postMessage({ name: "startTimer", duration: this.duration });
         requestWakeLock();
         timerStatus.classList.remove("restart");
         timerStatus.classList.add("pause");
@@ -104,7 +118,6 @@ class Timer {
         deleteButton.disabled = true;
         studyDuration.disabled = true;
         breakDuration.disabled = true;
-        this.timerStatus = "running";
     }
 
     resumeTimer() {
@@ -140,20 +153,41 @@ class Timer {
                 `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
         }
         this.timerStatus = "expired";
-    }
-
-    restoreTimer() {
-        localStorage.getItem("timerDuration");
-        localStorage.getItem("startDateTime");
+        localStorage.removeItem("workerTimerBackupData");
+        localStorage.removeItem("timerBackupData");
     }
 
     getTimerStatus() {
         return this.timerStatus;
     }
+
+    restoreTimer(workerTimerBackupData, timerBackupData) {
+        this.timerType = timerBackupData.timerType;
+        this.duration = timerBackupData.duration;
+        this.timerStatus = timerBackupData.timerStatus;
+        this.worker.postMessage({ name: "restoreTimer", workerTimerBackupData: workerTimerBackupData });
+    }
 }
 
-/** @type {Timer | null} */
-let timer = null;
+function restoreTimer() {
+    let workerTimerBackupData = localStorage.getItem("workerTimerBackupData");
+    let timerBackupData = localStorage.getItem("timerBackupData");
+    if (workerTimerBackupData && timerBackupData) {
+        if (window.confirm("前回利用したタイマーがあります。再開しますか？")) {
+
+            // 音源読み込みが完了した後に呼ぶのでnullにならない
+            studyStartAudio.play();
+            breakStartAudio.play();
+
+            workerTimerBackupData = JSON.parse(workerTimerBackupData);
+            timerBackupData = JSON.parse(timerBackupData);
+            timer = new Timer(timerBackupData.timerType, Number(timerBackupData.duration), true);
+            timer.restoreTimer(workerTimerBackupData, timerBackupData);
+            return true;
+        }
+    }
+    return false;
+}
 
 function updateTimeLeft(timerSeconds) {
     let timerMinutes = Math.floor(timerSeconds / 60);
@@ -161,6 +195,15 @@ function updateTimeLeft(timerSeconds) {
     if (timerSeconds >= 100 * 60) digits = 3;
     minutes.textContent = ("00" + timerMinutes).slice(-digits);
     seconds.textContent = `${("00" + (timerSeconds % 60)).slice(-2)}`;
+}
+
+function backupTimerData(backupData, timerType, duration, timerStatus) {
+    localStorage.setItem("workerTimerBackupData", JSON.stringify(backupData));
+    localStorage.setItem("timerBackupData", JSON.stringify({
+        timerType: timerType,
+        duration: duration,
+        timerStatus: timerStatus
+    }));
 }
 
 startBreakButton.addEventListener("click", () => {
@@ -187,6 +230,7 @@ studyDuration.addEventListener("input", () => {
     updateTimeLeft(studyDuration.value * 60);
 });
 
+// タイマーの起動は基本的にここで行う
 timerElement.addEventListener("click", () => {
     if (timer) {
         if (timer.getTimerStatus() === "running") {
@@ -197,7 +241,11 @@ timerElement.addEventListener("click", () => {
             return
         }
     }
-    timer = new Timer("study", studyDuration.value);
+    if (!studyStartAudio || !breakStartAudio) {
+        alert("アラーム音が設定されていません。画面下部の「アラーム音の設定」ボタンから、アラーム音を設定してください。");
+    } else {
+        timer = new Timer("study", studyDuration.value);
+    }
 });
 
 deleteButton.addEventListener("click", () => {
@@ -207,8 +255,8 @@ deleteButton.addEventListener("click", () => {
 
 saveButton.addEventListener("click", () => {
     // 設定を保存
-    localStorage.setItem("study_time", studyDuration.value);
-    localStorage.setItem("break_time", breakDuration.value);
+    localStorage.setItem("defaultStudyDuration", studyDuration.value);
+    localStorage.setItem("defaultBreakDuration", breakDuration.value);
     alert("勉強・休憩時間の設定がブラウザに保存されました。")
 });
 
@@ -224,8 +272,6 @@ if ("wakeLock" in navigator) {
 
 // 起動ロックの参照を作成
 let wakeLock = null;
-// 起動ロックが有効かどうかを示すフラグ
-let isActiveScreen = false;
 
 // wakeLock 対応確認
 if ("wakeLock" in navigator) {
@@ -239,7 +285,6 @@ if ("wakeLock" in navigator) {
 
 // 非同期関数を作成して起動ロックをリクエスト
 async function requestWakeLock() {
-    isActiveScreen = true;
     try {
         wakeLock = await navigator.wakeLock.request("screen");
         console.log("起動ロックが有効です。");
@@ -257,7 +302,6 @@ async function requestWakeLock() {
 }
 
 async function releaseWakeLock() {
-    isActiveScreen = true;
     if (wakeLock !== null) {
         await wakeLock.release().then(() => {
             wakeLock = null;
@@ -317,17 +361,33 @@ function getAudio(id) {
 request.onsuccess = async (event) => {
     db = event.target.result;
 
-    studyStartAudio = await getAudio("studyMusic");
-    if (!studyStartAudio) {
-        document.getElementById("studyMusic_currentAudio").textContent = "未設定";
-    }
-    breakStartAudio = await getAudio("breakMusic");
-    if (!breakStartAudio) {
-        document.getElementById("breakMusic_currentAudio").textContent = "未設定";
-    }
+    const promises = [
+        new Promise(async (resolve, reject) => {
+            studyStartAudio = await getAudio("studyMusic");
+            if (!studyStartAudio) {
+                document.getElementById("studyMusic_currentAudio").textContent = "未設定";
+            }
+            resolve();
+        }),
+        new Promise(async (resolve, reject) => {
+            breakStartAudio = await getAudio("breakMusic");
+            if (!breakStartAudio) {
+                document.getElementById("breakMusic_currentAudio").textContent = "未設定";
+            }
+            resolve();
+        }),
+    ]
+
+    await Promise.all(promises).then(() => {
+        console.log("アラーム音の初期化が完了しました。");
+    });
 
     if (!studyStartAudio || !breakStartAudio) {
         alert("アラーム音が設定されていません。画面下部の「アラーム音の設定」ボタンから、アラーム音を設定してください。");
+    } else {
+        if (!restoreTimer()) {
+            updateTimeLeft(studyDuration.value * 60);
+        }
     }
 };
 
