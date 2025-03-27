@@ -253,7 +253,7 @@ function updateTimeLeft(timerSeconds) {
     if (timerSeconds >= 0) {
         minutes.textContent = zeroPadding(Math.floor(timerSeconds / 60));
     } else {
-        minutes.textContent = zeroPadding(Math.floor(timerSeconds / 60) + 1);
+        minutes.textContent = zeroPadding(-Math.floor(Math.abs(timerSeconds / 60)));
     }
     seconds.textContent = zeroPadding(timerSeconds % 60);
 }
@@ -414,9 +414,7 @@ request.onsuccess = async (event) => {
         }),
     ]
 
-    await Promise.all(promises).then(() => {
-        console.log("アラーム音の初期化が完了しました。");
-    });
+    await Promise.all(promises);
 
     if (!studyStartAudio || !breakStartAudio) {
         alert("アラーム音が設定されていません。画面下部の「アラーム音の設定」ボタンから、アラーム音を設定してください。");
