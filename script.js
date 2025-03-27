@@ -197,6 +197,14 @@ class Timer {
             breakDuration.disabled = true;
         } else if (timerBackupData.timerStatus === "pausing") {
             this.pauseTimer();
+        } else if (timerBackupData.timerStatus === "expired") {
+            if (timerBackupData.timerType === "study") {
+                toBreakNotification.classList.remove("hidden");
+                toBreakNotification.classList.add("active");
+            } else {
+                toStudyNotification.classList.remove("hidden");
+                toStudyNotification.classList.add("active");
+            }
         }
     }
 
