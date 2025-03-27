@@ -3,7 +3,9 @@ const timeElement = document.getElementById("time");
 const days = ['日', '月', '火', '水', '木', '金', '土']
 
 function zeroPadding(number) {
-    if (number < 10) {
+    if (number < 0) {
+        return number
+    } else if (number < 10) {
         return `0${number}`;
     }
     return number;
@@ -26,7 +28,11 @@ const studyCircle = document.querySelector("div.circle"),
     toBreakNotification = document.getElementById("notification_to_break"),
     toStudyNotification = document.getElementById("notification_to_study"),
     startBreakButton = document.getElementById("start_break"),
-    startStudyButton = document.getElementById("start_study");
+    startStudyButton = document.getElementById("start_study"),
+    popup = document.getElementById("popup"),
+    popupYes = document.getElementById("popup_yes"),
+    popupNo = document.getElementById("popup_no");
+
 
 /** @type {HTMLAudioElement | null} */
 let studyStartAudio = null
@@ -85,7 +91,7 @@ class Timer {
                         toStudyNotification.classList.add("active");
                         toStudyNotification.classList.remove("hidden");
                     }
-                    this.timerStatus = "expired";
+                    timer.timerStatus = "expired";
                     break;
                 case "updateProgress":
                     if (timerType === "study") {
@@ -98,7 +104,7 @@ class Timer {
                     break;
                 case "updateTimeLeft":
                     updateTimeLeft(e.data.timerSeconds);
-                    backupTimerData(e.data.backupData, this.timerType, this.duration, this.timerStatus);
+                    timer.backupTimer(e.data.backupData);
                     break;
                 default:
                     break;
@@ -141,17 +147,15 @@ class Timer {
     }
 
     resetTimer() {
-        if (this.worker) {
-            this.worker.terminate();
-            timerStatus.classList.remove("restart");
-            timerStatus.textContent = "タップして開始";
-            studyDuration.disabled = false;
-            breakDuration.disabled = false;
-            studyCircle.style.background =
-                `conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg)`;
-            breakCircle.style.background =
-                `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
-        }
+        this.terminateWorker();
+        timerStatus.classList.remove("restart");
+        timerStatus.textContent = "タップして開始";
+        studyDuration.disabled = false;
+        breakDuration.disabled = false;
+        studyCircle.style.background =
+            `conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg)`;
+        breakCircle.style.background =
+            `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
         this.timerStatus = "expired";
         localStorage.removeItem("workerTimerBackupData");
         localStorage.removeItem("timerBackupData");
@@ -161,49 +165,89 @@ class Timer {
         return this.timerStatus;
     }
 
+    backupTimer(workerTimerBackupData) {
+        const timerBackupData = {
+            timerType: this.timerType,
+            duration: this.duration,
+            timerStatus: this.timerStatus,
+            studyDuration: studyDuration.value,
+            breakDuration: breakDuration.value,
+            studyCircleStyle: studyCircle.style.background,
+            breakCircleStyle: breakCircle.style.background,
+        };
+        localStorage.setItem("workerTimerBackupData", JSON.stringify(workerTimerBackupData));
+        localStorage.setItem("timerBackupData", JSON.stringify(timerBackupData));
+    }
+
     restoreTimer(workerTimerBackupData, timerBackupData) {
         this.timerType = timerBackupData.timerType;
         this.duration = timerBackupData.duration;
         this.timerStatus = timerBackupData.timerStatus;
-        this.worker.postMessage({ name: "restoreTimer", workerTimerBackupData: workerTimerBackupData });
+        studyCircle.style.background = timerBackupData.studyCircleStyle;
+        breakCircle.style.background = timerBackupData.breakCircleStyle;
+        updateTimeLeft(Math.floor(workerTimerBackupData.remainingTimerTicks / 50))
+        this.worker.postMessage({ name: "restoreTimer", workerTimerBackupData: workerTimerBackupData, timerStatus: timerBackupData.timerStatus });
+        if (timerBackupData.timerStatus === "running") {
+            requestWakeLock();
+            timerStatus.classList.remove("restart");
+            timerStatus.classList.add("pause");
+            timerStatus.textContent = "一時停止";
+            deleteButton.disabled = true;
+            studyDuration.disabled = true;
+            breakDuration.disabled = true;
+        } else if (timerBackupData.timerStatus === "pausing") {
+            this.pauseTimer();
+        }
+    }
+
+    terminateWorker() {
+        if (this.worker) {
+            this.worker.terminate();
+        }
     }
 }
 
-function restoreTimer() {
+function timerRestorePopup() {
+    return new Promise((resolve) => {
+        popup.classList.add("active");
+        popupYes.addEventListener("click", () => {
+            resolve(true);
+            popup.classList.remove("active");
+        }, { once: true })
+        popupNo.addEventListener("click", () => {
+            resolve(false);
+            popup.classList.remove("active");
+        }, { once: true });
+    });
+}
+
+async function restoreTimer() {
     let workerTimerBackupData = localStorage.getItem("workerTimerBackupData");
     let timerBackupData = localStorage.getItem("timerBackupData");
     if (workerTimerBackupData && timerBackupData) {
-        if (window.confirm("前回利用したタイマーがあります。再開しますか？")) {
-
-            // 音源読み込みが完了した後に呼ぶのでnullにならない
-            studyStartAudio.play();
-            breakStartAudio.play();
-
+        if (await timerRestorePopup()) {
             workerTimerBackupData = JSON.parse(workerTimerBackupData);
             timerBackupData = JSON.parse(timerBackupData);
             timer = new Timer(timerBackupData.timerType, Number(timerBackupData.duration), true);
             timer.restoreTimer(workerTimerBackupData, timerBackupData);
+            studyDuration.value = timerBackupData.studyDuration;
+            breakDuration.value = timerBackupData.breakDuration;
             return true;
+        } else {
+            localStorage.removeItem("workerTimerBackupData");
+            localStorage.removeItem("timerBackupData");
         }
     }
     return false;
 }
 
 function updateTimeLeft(timerSeconds) {
-    let timerMinutes = Math.floor(timerSeconds / 60);
-    let digits = 2;
-    if (timerSeconds >= 100 * 60) digits = 3;
-    minutes.textContent = ("00" + timerMinutes).slice(-digits);
-    seconds.textContent = `${("00" + (timerSeconds % 60)).slice(-2)}`;
-}
-
-function backupTimerData(backupData, timerType, duration, timerStatus) {
-    localStorage.setItem("workerTimerBackupData", JSON.stringify(backupData));
-    localStorage.setItem("timerBackupData", JSON.stringify({
-        timerType: timerType,
-        duration: duration,
-        timerStatus: timerStatus
-    }));
+    if (timerSeconds >= 0) {
+        minutes.textContent = zeroPadding(Math.floor(timerSeconds / 60));
+    } else {
+        minutes.textContent = zeroPadding(Math.floor(timerSeconds / 60) + 1);
+    }
+    seconds.textContent = zeroPadding(timerSeconds % 60);
 }
 
 startBreakButton.addEventListener("click", () => {
@@ -211,6 +255,7 @@ startBreakButton.addEventListener("click", () => {
     breakStartAudio.currentTime = 0;
     toBreakNotification.classList.add("hidden");
     toBreakNotification.classList.remove("active");
+    timer.terminateWorker();
     timer = new Timer("break", breakDuration.value);
 });
 
@@ -223,29 +268,12 @@ startStudyButton.addEventListener("click", () => {
         `conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg)`;
     breakCircle.style.background =
         `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
+    timer.terminateWorker();
     timer = new Timer("study", studyDuration.value);
 });
 
 studyDuration.addEventListener("input", () => {
     updateTimeLeft(studyDuration.value * 60);
-});
-
-// タイマーの起動は基本的にここで行う
-timerElement.addEventListener("click", () => {
-    if (timer) {
-        if (timer.getTimerStatus() === "running") {
-            timer.pauseTimer();
-            return
-        } else if (timer.getTimerStatus() === "pausing") {
-            timer.resumeTimer();
-            return
-        }
-    }
-    if (!studyStartAudio || !breakStartAudio) {
-        alert("アラーム音が設定されていません。画面下部の「アラーム音の設定」ボタンから、アラーム音を設定してください。");
-    } else {
-        timer = new Timer("study", studyDuration.value);
-    }
 });
 
 deleteButton.addEventListener("click", () => {
@@ -385,9 +413,26 @@ request.onsuccess = async (event) => {
     if (!studyStartAudio || !breakStartAudio) {
         alert("アラーム音が設定されていません。画面下部の「アラーム音の設定」ボタンから、アラーム音を設定してください。");
     } else {
-        if (!restoreTimer()) {
+        const shouldRestoreTimer = await restoreTimer();
+        if (!shouldRestoreTimer) {
             updateTimeLeft(studyDuration.value * 60);
         }
+        timerElement.addEventListener("click", () => {
+            if (timer) {
+                if (timer.getTimerStatus() === "running") {
+                    timer.pauseTimer();
+                    return
+                } else if (timer.getTimerStatus() === "pausing") {
+                    timer.resumeTimer();
+                    return
+                }
+            }
+            if (!studyStartAudio || !breakStartAudio) {
+                alert("アラーム音が設定されていません。画面下部の「アラーム音の設定」ボタンから、アラーム音を設定してください。");
+            } else {
+                timer = new Timer("study", studyDuration.value);
+            }
+        });
     }
 };
 
