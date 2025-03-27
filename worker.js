@@ -3,20 +3,23 @@ class WorkerTimer {
      * 内部処理は全て秒
      * @param {Number} timerDuration タイマー時間(分)
      */
-    constructor(timerDuration, workerTimerBackupData = null) {
+    constructor(timerDuration, workerTimerBackupData = null, timerStatus = null) {
         if (!workerTimerBackupData) {
             this.timerDuration = timerDuration * 60;
             this.startTime = new Date().getTime();
             this.TIMER_COUNT = this.timerDuration * 50;
             this.remainingTimerTicks = this.timerDuration * 50;
+            this.setTimerInterval();
         } else {
             this.timerDuration = Number(workerTimerBackupData.timerDuration);
             this.startTime = Number(workerTimerBackupData.startTime);
             this.TIMER_COUNT = Number(workerTimerBackupData.TIMER_COUNT);
             this.remainingTimerTicks = Number(workerTimerBackupData.remainingTimerTicks);
-            console.log(workerTimerBackupData)
+            if (timerStatus === "running") {
+                console.log("resume")
+                this.setTimerInterval();
+            }
         }
-        this.setTimerInterval();
     }
 
     resumeTimer() {
@@ -25,6 +28,8 @@ class WorkerTimer {
     }
 
     pauseTimer() {
+        // 意図的にBackup処理を走らせている
+        postMessage({ name: "updateTimeLeft", timerSeconds: Math.floor(this.remainingTimerTicks / 50) + 1, backupData: this.getBackupData() })
         clearInterval(this.timerInterval);
     }
 
@@ -43,7 +48,7 @@ class WorkerTimer {
             }
 
             if (this.remainingTimerTicks <= 0) {
-                clearInterval(this.timerInterval);
+                // clearInterval(this.timerInterval);
                 postMessage({ name: "timerExpired" });
             }
 
@@ -78,7 +83,7 @@ onmessage = function (e) {
             workerTimer.resumeTimer();
             break;
         case "restoreTimer":
-            workerTimer = new WorkerTimer(0, e.data.workerTimerBackupData);
+            workerTimer = new WorkerTimer(0, e.data.workerTimerBackupData, e.data.timerStatus);
         default:
             break;
     }
