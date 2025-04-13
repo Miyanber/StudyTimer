@@ -50,8 +50,8 @@
     </div>
 
     <div class="settings">
-        <p><label for="study_time">勉強時間(分)</label><input type="number" name="study_time" id="study_time" value="45" min="0"></p>
-        <p><label for="break_time">休憩時間(分)</label><input type="number" name="break_time" id="break_time" value="15" min="0"></p>
+        <p><label for="studyTime">勉強時間(分)</label><input type="number" name="studyTime" id="studyTime" min="0"></p>
+        <p><label for="break_time">休憩時間(分)</label><input type="number" name="break_time" id="break_time" min="0"></p>
     </div>
 
     <div class="timer" id="timer">
@@ -67,15 +67,15 @@
             </div>
             <div class="timer_status">
                 <div id="timer_status" class="timer_status__text">
-                    タップして開始
+                    読み込み中です...
                 </div>
             </div>
         </div>
     </div>
 
     <div class="buttons">
-        <button type="button" id="delete" class="save">リセット</button>
-        <button type="button" id="save" class="save">設定を保存</button>
+        <button type="button" id="delete" class="save">タイマーをリセット</button>
+        <button type="button" id="save" class="save">時間の設定を保存</button>
         <button type="button" id="openMusicSelector" class="save">アラーム音の設定</button>
     </div>
 
@@ -83,7 +83,7 @@
         <div class="musicSelector__content">
             <div class="musicSelector__content__header">
                 <h2>アラーム音の設定</h2>
-                <button type="button" id="closeMusicSelector" class="screen_close">閉じる</button>
+                <div id="closeMusicSelector" class="screenCloseButton"></div>
             </div>
             <div class="musicSelector__content__list">
                 <h3>現在のアラーム音</h3>

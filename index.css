@@ -52,76 +52,73 @@ header .author {
 }
 
 .timer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
     height: fit-content;
     width: 250px;
     height: 250px;
     cursor: pointer;
-}
+    position: relative;
+    margin: 30px auto;
 
-.circle {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    /* JSで動的に変更 */
-    background-image: conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg);
-}
-
-.circle_break {
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    width: 230px;
-    height: 230px;
-    border-radius: 50%;
-    /* JSで動的に変更 */
-    background-image: conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg);
-}
-
-div.center {
-    position: absolute;
-    top: 5%;
-    bottom: 0;
-    width: 100%;
-    height: max-content;
-    margin: auto;
-    text-align: center;
-}
-
-div.circle_break::before {
-    position: absolute;
-    content: "";
-    top: 10px;
-    left: 10px;
-    width: 210px;
-    height: 210px;
-    background-color: #000f3c;
-    border-radius: 50%;
-}
-
-.timer_container {
-    position: absolute;
-    color: var(--white);
-    top: 50%;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    transform: translateY(-50%);
-
-    .minutes {
-        font-size: 80px;
-        line-height: 80px;
+    .circle {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 250px;
+        height: 250px;
+        border-radius: 50%;
+        /* JSで動的に変更 */
+        background-image: conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg);
+    }
+    
+    .circle_break {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        /* JSで動的に変更 */
+        background-image: conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg);
+    }
+    
+    div.center {
+        position: absolute;
+        top: 5%;
+        bottom: 0;
+        width: 100%;
+        height: max-content;
+        margin: auto;
+        text-align: center;
+    }
+    
+    div.circle_break::before {
+        position: absolute;
+        content: "";
+        top: 10px;
+        left: 10px;
+        width: 210px;
+        height: 210px;
+        background-color: #000f3c;
+        border-radius: 50%;
+    }
+    
+    .timer_container {
+        color: var(--white);
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        top: 40px;
+    
+        .minutes {
+            font-size: 80px;
+            line-height: 80px;
+        }
+    
+        .seconds {
+            font-size: 30px;
+        }
     }
 
-    .seconds {
-        font-size: 30px;
-    }
 }
 
 .timer_status__text {
@@ -149,45 +146,22 @@ div.circle_break::before {
 }
 
 .settings {
-    position: absolute;
-    left: 50%;
-    top: 11%;
-    transform: translateX(-50%);
+    margin: 30px auto;
     text-align: center;
     width: max-content;
 }
 
 .settings input {
-    width: 50px;
+    width: 80px;
     padding: 5px 10px;
     border-radius: 10px;
     margin-left: 10px;
+    font-size: 1em;
 }
 
 button {
     padding: 10px 5px;
-    border-radius: 20px;
-    width: 120px;
 }
-
-button#start_pause {
-    margin-right: 20px;
-}
-
-button#start_pause.pause {
-    background-color: #ff6060;
-    color: var(--white);
-}
-
-button#start_pause.restart {
-    background-color: #799aff;
-    color: var(--white);
-}
-
-/* button#start_pause:disabled {
-    background-color: #552020;
-    color: rgb(90, 90, 90);
-} */
 
 input:disabled {
     color: var(--white);
@@ -197,16 +171,14 @@ input:disabled {
     display: flex;
     justify-content: center;
     align-items: center;
-    row-gap: .5em;
-    flex-direction: column;
-    flex-wrap: wrap;
-    position: absolute;
-    bottom: 10%;
+    position: fixed;
+    bottom: 0;
     width: 100%;
 
     button {
-        width: max-content;
-        min-width: 10em;
+        width: 100%;
+        height: 60px;
+        max-height: 10vh;
     }
 }
 
@@ -257,6 +229,10 @@ input:disabled {
     box-shadow: 5px 10px 15px #000f3c9f;
     column-gap: .5em;
     row-gap: .5em;
+
+    button {
+        padding: 10px 20px;
+    }
 }
 
 .notification.active .message_container {
@@ -322,10 +298,14 @@ input:disabled {
 
 .popup__buttons {
     display: flex;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
-    column-gap: .5em;
-    row-gap: .5em;
+
+    button {
+        width: 6em;
+        font-size: 1em;
+        border-radius: 20px;
+    }
 
     #popup_yes,
     #popup_no {
@@ -378,7 +358,7 @@ input:disabled {
     }
 }
 
-.screen_close {
+.screenCloseButton {
     display: block;
     position: absolute;
     top: 0;
@@ -387,10 +367,14 @@ input:disabled {
     height: 35px;
     border-radius: 50%;
     background: #333;
+    border-top: 2px solid #555;
+    border-left: 2px solid #555;
+    border-right: 2px solid #222;
+    border-bottom: 2px solid #222;
 }
 
-.screen_close::before,
-.screen_close::after {
+.screenCloseButton::before,
+.screenCloseButton::after {
     content: "";
     position: absolute;
     top: 50%;
@@ -401,11 +385,11 @@ input:disabled {
     /* バツ印の色 */
 }
 
-.screen_close::before {
+.screenCloseButton::before {
     transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.screen_close::after {
+.screenCloseButton::after {
     transform: translate(-50%, -50%) rotate(-45deg);
 }
 
@@ -454,17 +438,8 @@ input:disabled {
         border-radius: 10px;
         margin-left: 10px;
     }
+}
 
-    .buttons {
-        bottom: 15%;
-        width: 100%;
-        width: max-content;
-        right: 25%;
-        transform: translateX(50%);
-
-        button {
-            width: max-content;
-            min-width: 10em;
-        }
-    }
+@media (orientation: landscape) {
+    
 }

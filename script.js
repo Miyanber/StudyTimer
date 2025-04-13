@@ -46,16 +46,11 @@ const timerElement = document.getElementById("timer");
 const timerStatus = document.getElementById("timer_status");
 const deleteButton = document.getElementById("delete");
 const saveButton = document.getElementById("save");
-const studyDuration = document.getElementById("study_time");
+const studyDuration = document.getElementById("studyTime");
 studyDuration.value = localStorage.getItem("defaultStudyDuration");
 const breakDuration = document.getElementById("break_time");
 breakDuration.value = localStorage.getItem("defaultBreakDuration");
 
-
-window.addEventListener('beforeunload', (e) => {
-    e.preventDefault();
-    return
-})
 
 class Timer {
     /**
@@ -422,6 +417,7 @@ request.onsuccess = async (event) => {
         const shouldRestoreTimer = await restoreTimer();
         if (!shouldRestoreTimer) {
             updateTimeLeft(studyDuration.value * 60);
+            timerStatus.textContent = "タップして開始";
         }
         timerElement.addEventListener("click", () => {
             if (timer) {
