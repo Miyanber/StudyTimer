@@ -73,6 +73,19 @@
         </div>
     </div>
 
+    <div class="exam">
+        <div class="exam__container">
+            <div class="exam__container__settings">
+                <label for="examTime">試験時間(分)</label>
+                <input type="number" name="examTime" id="examTime" min="0">
+                <button type="button" id="startExam">試験開始</button>
+            </div>
+            <div class="exam__container__schedule">
+                <span id="examStartTime"></span> ～<span id="examEndTime"></span>
+            </div>
+        </div>
+    </div>
+
     <div class="buttons">
         <button type="button" id="delete" class="save">タイマーをリセット</button>
         <button type="button" id="save" class="save">時間の設定を保存</button>

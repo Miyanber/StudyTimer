@@ -40,7 +40,7 @@ header .author {
     font-size: .9em;
 }
 
-.dateTime .highlight {
+.highlight {
     font-weight: bold;
     font-size: 1.2em;
     margin: 0 1px;
@@ -157,6 +157,22 @@ header .author {
     border-radius: 10px;
     margin-left: 10px;
     font-size: 1em;
+}
+
+.exam {
+    position: absolute;
+    right: 10%;
+    top: 50%;
+    background-color: #182c68;
+    padding: 20px;
+    width: 40%;
+
+    input {
+        width: 5em;
+        padding: .5em;
+        border-radius: 10px;
+        margin-left: 10px;
+    }
 }
 
 button {
