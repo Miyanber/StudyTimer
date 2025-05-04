@@ -179,7 +179,7 @@ header .author {
     position: absolute;
     right: 50%;
     transform: translateX(50%);
-    top: 70%;
+    top: 60%;
     background-color: #182c68;
     padding: 15px;
     min-width: 300px;
@@ -525,7 +525,7 @@ input:disabled {
     }
 
     .stopWatch {
-        top: 55%;
+        top: 50%;
         right: 30%;
     }
 }
