@@ -550,24 +550,24 @@ const examEndTimeElement = document.getElementById("examEndTime");
 
 let examEndTime = null;
 
-startExamButton.addEventListener("click", () => {
-    const examDuration = document.getElementById("examTime").value;
-    if (examDuration == 0 || examDuration == null) {
-        alert("試験時間を設定してください。");
-        return;
-    }
-    const now = new Date();
-    examEndTime = new Date(new Date().getTime() + examDuration * 60 * 1000);
-    examStartTimeElement.innerHTML = `<span class="highlight">${zeroPadding(now.getHours())}:${zeroPadding(now.getMinutes())}</span>${zeroPadding(now.getSeconds())}`;
-    examEndTimeElement.innerHTML = `<span class="highlight">${zeroPadding(examEndTime.getHours())}:${zeroPadding(examEndTime.getMinutes())}</span>${zeroPadding(examEndTime.getSeconds())}`;
-});
+// startExamButton.addEventListener("click", () => {
+//     const examDuration = document.getElementById("examTime").value;
+//     if (examDuration == 0 || examDuration == null) {
+//         alert("試験時間を設定してください。");
+//         return;
+//     }
+//     const now = new Date();
+//     examEndTime = new Date(new Date().getTime() + examDuration * 60 * 1000);
+//     examStartTimeElement.innerHTML = `<span class="highlight">${zeroPadding(now.getHours())}:${zeroPadding(now.getMinutes())}</span>${zeroPadding(now.getSeconds())}`;
+//     examEndTimeElement.innerHTML = `<span class="highlight">${zeroPadding(examEndTime.getHours())}:${zeroPadding(examEndTime.getMinutes())}</span>${zeroPadding(examEndTime.getSeconds())}`;
+// });
 
-setInterval(() => {
-    const now = new Date();
-    if (examEndTime && now.getTime() >= examEndTime.getTime()) {
-        alert("試験時間が終了しました。");
-        examEndTime = null;
-        return;
-    }
-}, 1000);
+// setInterval(() => {
+//     const now = new Date();
+//     if (examEndTime && now.getTime() >= examEndTime.getTime()) {
+//         alert("試験時間が終了しました。");
+//         examEndTime = null;
+//         return;
+//     }
+// }, 1000);
 //### ここまで 「試験」機能 ###

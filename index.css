@@ -175,6 +175,69 @@ header .author {
     }
 }
 
+.stopWatch {
+    position: absolute;
+    right: 50%;
+    transform: translateX(50%);
+    top: 70%;
+    background-color: #182c68;
+    padding: 15px;
+    min-width: 300px;
+    border-radius: 20px;
+
+    .stopWatch__container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-direction: column;
+        row-gap: 5px;
+    }
+
+    .stopWatch__container__screen {
+        font-size: 1.5em;
+        padding: 5px 0;
+        letter-spacing: 1px;
+
+        .char {
+            font-size: .6em;
+            vertical-align: top;
+        }
+    }
+
+    .stopWatch__container__buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        column-gap: 5px;
+
+        button {
+            color: white;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            border-radius: 20px;
+            padding: 10px;
+        }
+
+        button:disabled {
+            opacity: .5;
+        }
+
+        .start {
+            background-color: #2c5cec;
+        }
+
+        .pause {
+            background-color: #ff4545;
+        }
+
+        .reset {
+            background-color: #636363;
+        }
+    }
+
+}
+
 button {
     padding: 10px 5px;
 }
@@ -430,6 +493,10 @@ input:disabled {
 }
 
 @media screen and (max-height: 600px) {
+    
+}
+
+@media (orientation: landscape) {
     .timer {
         position: absolute;
         top: 45%;
@@ -456,8 +523,9 @@ input:disabled {
         border-radius: 10px;
         margin-left: 10px;
     }
-}
 
-@media (orientation: landscape) {
-    
+    .stopWatch {
+        top: 55%;
+        right: 30%;
+    }
 }
