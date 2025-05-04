@@ -47,8 +47,7 @@ class WorkerTimer {
                 postMessage({ name: "updateTimeLeft", timerSeconds: timerSeconds, backupData: this.getBackupData() })
             }
 
-            if (this.remainingTimerTicks <= 0) {
-                // clearInterval(this.timerInterval);
+            if (this.remainingTimerTicks == 0) {
                 postMessage({ name: "timerExpired" });
             }
 
