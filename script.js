@@ -254,15 +254,17 @@ function updateTimeLeft(timerSeconds) {
 }
 
 startBreakButton.addEventListener("click", () => {
+    timer.terminateWorker(); // まず最初にタイマーリセット
+    timer = new Timer("break", breakDuration.value);
     breakStartAudio.pause();
     breakStartAudio.currentTime = 0;
     toBreakNotification.classList.add("hidden");
     toBreakNotification.classList.remove("active");
-    timer.terminateWorker();
-    timer = new Timer("break", breakDuration.value);
 });
 
 startStudyButton.addEventListener("click", () => {
+    timer.terminateWorker(); // まず最初にタイマーリセット
+    timer = new Timer("study", studyDuration.value);
     studyStartAudio.pause();
     studyStartAudio.currentTime = 0;
     toStudyNotification.classList.add("hidden");
@@ -271,8 +273,6 @@ startStudyButton.addEventListener("click", () => {
         `conic-gradient(#799aff 0deg 0deg, #333 0deg 360deg)`;
     breakCircle.style.background =
         `conic-gradient(#ff6060 0deg 0deg, #505050 0deg 360deg)`;
-    timer.terminateWorker();
-    timer = new Timer("study", studyDuration.value);
 });
 
 studyDuration.addEventListener("input", () => {
