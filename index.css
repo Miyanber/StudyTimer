@@ -176,14 +176,13 @@ header .author {
 }
 
 .stopWatch {
-    position: absolute;
-    right: 50%;
-    transform: translateX(50%);
-    top: 60%;
     background-color: #182c68;
     padding: 15px;
     min-width: 300px;
+    width: max-content;
+    max-width: 80%;
     border-radius: 20px;
+    margin: 40px auto;
 
     .stopWatch__container {
         display: flex;
@@ -511,8 +510,8 @@ input:disabled {
     .settings {
         position: absolute;
         left: 75%;
-        top: 15%;
-        transform: translateX(-50%);
+        top: 25%;
+        transform: translateX(-50%) translateY(-50%);
         text-align: center;
         width: max-content;
     }
@@ -525,7 +524,9 @@ input:disabled {
     }
 
     .stopWatch {
-        top: 50%;
+        position: absolute;
+        top: 55%;
         right: 30%;
+        transform: translateX(50%) translateY(-50%);
     }
 }
