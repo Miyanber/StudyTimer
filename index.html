@@ -9,6 +9,7 @@
     <link rel="apple-touch-icon" href="favicon.png">
     <title>Study Timer</title>
     <script src="./script.js" defer></script>
+    <script src="./stopWatch.js" defer></script>
     <script src="./contents/serviceWorker.js" crossorigin="anonymous"></script>
     <script>
         registerMyServiceWorker();
@@ -73,7 +74,7 @@
         </div>
     </div>
 
-    <div class="exam">
+    <!-- <div class="exam">
         <div class="exam__container">
             <div class="exam__container__settings">
                 <label for="examTime">試験時間(分)</label>
@@ -82,6 +83,30 @@
             </div>
             <div class="exam__container__schedule">
                 <span id="examStartTime"></span> ～<span id="examEndTime"></span>
+            </div>
+        </div>
+    </div> -->
+
+    <div class="stopWatch">
+        <div class="stopWatch__container">
+            <div class="stopWatch__container__title">
+                STOPWATCH
+            </div>
+            <div class="stopWatch__container__screen">
+                <span class="hours">0</span><span class="char">H</span>
+                <span class="minutes">00</span><span class="char">M</span>
+                <span class="seconds">00</span><span class="char">S</span>
+            </div>
+            <div class="stopWatch__container__buttons">
+                <button type="button" class="start">
+                    START
+                </button>
+                <button type="button" class="pause" hidden>
+                    PAUSE
+                </button>
+                <button type="button" class="reset" hidden>
+                    RESET
+                </button>
             </div>
         </div>
     </div>
