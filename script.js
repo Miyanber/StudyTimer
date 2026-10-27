@@ -291,27 +291,14 @@ saveButton.addEventListener("click", () => {
     alert("勉強・休憩時間の設定がブラウザに保存されました。")
 });
 
-//### ここから 画面起動ロック API ###
-
-if ("wakeLock" in navigator) {
-    isSupported = true;
-    console.log("起動ロック API に対応しています。");
-} else {
-    wakeButton.disabled = true;
-    console.log("このブラウザーは起動ロックに対応していません。");
-}
-
 // 起動ロックの参照を作成
 let wakeLock = null;
+const isWakeLockSupported = "wakeLock" in navigator;
 
-// wakeLock 対応確認
-if ("wakeLock" in navigator) {
-    // isSupported = true;
+if (isWakeLockSupported) {
     console.log("起動ロック API に対応しています。");
-    alert("Study Timer では、タイマーを継続して起動させるため、画面スリーブを停止しています。");
 } else {
-    // wakeButton.disabled = true;
-    alert("このブラウザーは起動ロックに対応していません。Study Timer では、タイマーを継続して起動させるため、画面スリーブを停止する必要があります。");
+    console.warn("このブラウザーは起動ロックに対応していません。タイマー動作中のスリープ防止は無効化されます。");
 }
 
 // 非同期関数を作成して起動ロックをリクエスト

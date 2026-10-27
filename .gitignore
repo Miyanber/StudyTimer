@@ -1,1 +1,37 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Environment and Secrets
+.env
+.env.*
+!.env.example
+
+# Editor and IDE Settings
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Dependencies and Logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build and Temp
+dist/
+build/
+*.tmp
+*.bak
 make-precache-manifest.js
